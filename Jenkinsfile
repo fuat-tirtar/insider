@@ -13,8 +13,8 @@ pipeline {
                 // Docker Compose ile Selenium Grid ve node'larını başlatma
                 sh 'docker-compose up -d'
                 
-                // Selenium Grid'in hazır olup olmadığını kontrol etme, örneğin 30 saniye bekleyebiliriz
-                sh 'sleep 30 && docker-compose ps'
+                // Selenium Grid'in hazır olup olmadığını kontrol etme, örneğin 5 saniye bekleyebiliriz
+                sh 'sleep 5 && docker-compose ps'
             }
         }
         
