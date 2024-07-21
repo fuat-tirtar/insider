@@ -34,6 +34,7 @@ services:
   selenium-tests:
     build:
       context: .
+      dockerfile: Dockerfile  
     volumes:
       - ./reports:/usr/src/app/reports
     depends_on:
@@ -42,4 +43,3 @@ services:
       - SELENIUM_HOST=selenium-hub
       - SELENIUM_PORT=4444
     command: ["pytest", "-v", "--html=reports/report.html", "--self-contained-html", "tests/"]
-
