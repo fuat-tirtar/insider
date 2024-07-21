@@ -1,15 +1,17 @@
+# Dockerfile for Selenium tests
+
 # Base image
 FROM python:3.9-slim
 
-# Set working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Install dependencies
+# Copy the requirements file and install dependencies
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy test scripts
+# Copy the test scripts
 COPY . .
 
-# Command to run tests
-CMD ["pytest", "tests/"]
+# Command to run the tests
+CMD ["python", "run_tests.py"]
