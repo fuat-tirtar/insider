@@ -2,8 +2,7 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_HOME = '/usr/bin/docker' // Docker'ın PATH'i
-        COMPOSE_HOME = '/usr/bin/docker-compose' // Docker Compose'un PATH'i
+        DOCKER_COMPOSE_HOME = '/usr/local/bin/docker-compose' // Docker Compose'un PATH'i
     }
     
     stages {
@@ -19,17 +18,17 @@ pipeline {
         stage('Start Selenium Grid') {
             steps {
                 // Docker Compose ile Selenium Grid ve node'larını başlatma
-                sh "${COMPOSE_HOME} up -d"
+                sh "${DOCKER_COMPOSE_HOME} up -d"
                 
                 // Selenium Grid'in hazır olup olmadığını kontrol etme
-                sh 'sleep 5 && ${COMPOSE_HOME} ps'
+                sh 'sleep 5 && ${DOCKER_COMPOSE_HOME} ps'
             }
         }
         
         stage('Run Selenium Tests') {
             steps {
                 // Selenium testlerini Docker konteynerında çalıştırma adımı
-                sh "${COMPOSE_HOME} exec selenium-tests pytest -v --html=reports/report.html --self-contained-html tests/"
+                sh "${DOCKER_COMPOSE_HOME} exec selenium-tests pytest -v --html=reports/report.html --self-contained-html tests/"
             }
         }
         
@@ -47,8 +46,8 @@ pipeline {
     post {
         always {
             // Jenkins işlemlerinin sonunda önce eski imajları sil sonra da Docker konteynerları kapatma adımı
-            sh "${DOCKER_HOME} system prune -af"
-            sh "${COMPOSE_HOME} down"
+            sh "${DOCKER_COMPOSE_HOME} down"
+            sh "${DOCKER_COMPOSE_HOME} rm -fsv"
         }
     }
 }
