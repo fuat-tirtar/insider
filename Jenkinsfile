@@ -1,30 +1,36 @@
 pipeline {
-    parameters {
-        // Parametre tanımlaması: node_count parametresi
-        choice(name: 'node_count', choices: ['1', '2', '3', '4', '5'], description: 'Select number of nodes')
-    }
     agent any
-
+    
     stages {
         stage('Checkout') {
             steps {
-                // Git repo'yu checkout et
-                git 'https://github.com/fuat-tirtar/insider.git'
+                git branch: 'main', credentialsId: 'jenkins-github', url: 'https://github.com/fuat-tirtar/insider.git'
             }
         }
-        stage('Build and Test') {
+        
+        stage('Start Selenium Grid') {
             steps {
-                // Docker Compose ile belirtilen sayıda node çalıştır
+                // Docker Compose ile Selenium Grid ve node'larını başlatma
+                sh 'docker-compose up -d'
+                
+                // Selenium Grid'in hazır olup olmadığını kontrol etme, örneğin 30 saniye bekleyebiliriz
+                sh 'sleep 30 && docker-compose ps'
+            }
+        }
+        
+        stage('Run Selenium Tests') {
+            steps {
+                // Selenium testlerini Docker konteynerında çalıştırma adımı
+                sh 'docker-compose exec selenium-tests pytest -v --html=reports/report.html --self-contained-html tests/'
+            }
+        }
+        
+        stage('Send Test Results to Webhook') {
+            steps {
+                // Test sonuçlarını webhook'a gönderme adımı
                 script {
-                    def count = params.node_count.toInteger()
-                    if (count >= 1 && count <= 5) {
-                        // Docker Compose ile node sayısını belirtilen sayıya göre ayarla
-                        sh "docker-compose up -d --scale chrome-node=${count}"
-                        // Testleri çalıştır (örneğin pytest gibi)
-                        sh "docker-compose exec chrome-node pytest"
-                    } else {
-                        error "Invalid node_count parameter. Please choose a value between 1 and 5."
-                    }
+                    def response = sh(script: 'curl -X POST -d @reports/report.html https://webhook.site/02eaf3aa-6596-4a62-aef2-0511d7e3bddd', returnStdout: true)
+                    echo "Webhook response: ${response}"
                 }
             }
         }
@@ -32,7 +38,7 @@ pipeline {
 
     post {
         always {
-            // Testler bittikten sonra Docker Compose'i kapat
+            // Jenkins işlemlerinin sonunda Docker konteynerları kapatma adımı
             sh 'docker-compose down'
         }
     }
