@@ -38,7 +38,8 @@ pipeline {
 
     post {
         always {
-            // Jenkins işlemlerinin sonunda Docker konteynerları kapatma adımı
+            // Jenkins işlemlerinin sonunda önce eski imajları sil sonra da Docker konteynerları kapatma adımı
+            sh 'docker system prune -af'
             sh 'docker-compose down'
         }
     }
