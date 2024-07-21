@@ -9,8 +9,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Checkout your VCS repository
-                // git 'https://github.com/your-repo/docker-selenium-tests.git'
+                git 'https://github.com/fuat-tirtar/insider.git'
             }
         }
         
@@ -28,8 +27,7 @@ pipeline {
         stage('Send Test Results') {
             steps {
                 script {
-                    // Use curl or similar to send test results to webhook.site URL
-                    // Example: sh 'curl -X POST -d "results=test_results" https://webhook.site/your-webhook-url'
+                    sh 'curl -X POST -d "results=test_results" https://webhook.site/9921afca-86a1-41ca-ac17-a8fe2586d364'
                 }
             }
         }
