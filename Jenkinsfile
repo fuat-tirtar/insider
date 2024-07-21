@@ -1,10 +1,6 @@
 pipeline {
     agent any
-    
-    environment {
-        DOCKER_COMPOSE_HOME = '/usr/local/bin/docker-compose' // Docker Compose'un PATH'i
-    }
-    
+      
     stages {
         stage('Checkout') {
             steps {
