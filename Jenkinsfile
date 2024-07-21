@@ -1,45 +1,46 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_COMPOSE_HOME = '/usr/local/bin/docker-compose'
-    }    
+    parameters {
+        string(name: 'BUILD_NAME', defaultValue: 'Build_Name', description: 'Set the build name')
+        choice(name: 'NODE_COUNT', choices: '1\n2\n3\n4\n5', description: 'Number of nodes to run tests')
+    }
+
     stages {
         stage('Checkout') {
             steps {
+                // Checkout your VCS repository
+                // git 'https://github.com/your-repo/docker-selenium-tests.git'
+            }
+        }
+        
+        stage('Build and Test') {
+            steps {
                 script {
-                    git branch: 'main', credentialsId: 'github-jenkins', url: 'https://github.com/fuat-tirtar/insider.git'
+                    def dockerImage = docker.build('selenium-tests')
+                    dockerImage.inside {
+                        sh 'python run_tests.py --node-count ${params.NODE_COUNT}'
+                    }
                 }
             }
         }
-        
-        stage('Start Selenium Grid') {
-            steps {
-                sh "${DOCKER_COMPOSE_HOME} up -d"
-                sh 'sleep 5 && ${DOCKER_COMPOSE_HOME} ps'
-            }
-        }
-        
-        stage('Run Selenium Tests') {
-            steps {
-                sh "${DOCKER_COMPOSE_HOME} exec selenium-tests pytest -v --html=reports/report.html --self-contained-html tests/"
-            }
-        }
-        
-        stage('Send Test Results to Webhook') {
+
+        stage('Send Test Results') {
             steps {
                 script {
-                    def response = sh(script: "curl -X POST -d @reports/report.html https://webhook.site/02eaf3aa-6596-4a62-aef2-0511d7e3bddd", returnStdout: true)
-                    echo "Webhook response: ${response}"
+                    // Use curl or similar to send test results to webhook.site URL
+                    // Example: sh 'curl -X POST -d "results=test_results" https://webhook.site/your-webhook-url'
                 }
             }
         }
     }
 
     post {
-        always {
-            sh "${DOCKER_COMPOSE_HOME} down"
-            sh "${DOCKER_COMPOSE_HOME} rm -fsv"
+        success {
+            echo "Build ${BUILD_NAME} succeeded!"
+        }
+        failure {
+            echo "Build ${BUILD_NAME} failed :("
         }
     }
 }
