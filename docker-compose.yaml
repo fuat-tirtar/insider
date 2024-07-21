@@ -1,12 +1,12 @@
 version: '3'
 services:
   selenium-hub:
-    image: selenium/hub:4.21.0
+    image: selenium/hub:latest
     ports:
       - "4444:4444"
   
   chrome-node:
-    image: selenium/node-chrome:4.21.0
+    image: selenium/node-chrome:latest
     depends_on:
       - selenium-hub
     environment:
@@ -19,7 +19,7 @@ services:
       - "5900:5900"
 
   firefox-node:
-    image: selenium/node-firefox:4.21.0
+    image: selenium/node-firefox:latest
     depends_on:
       - selenium-hub
     environment:
@@ -34,7 +34,6 @@ services:
   selenium-tests:
     build:
       context: .
-      dockerfile: Dockerfile  
     volumes:
       - ./reports:/usr/src/app/reports
     depends_on:
@@ -43,5 +42,8 @@ services:
       - SELENIUM_HOST=selenium-hub
       - SELENIUM_PORT=4444
     command: ["pytest", "-v", "--html=reports/report.html", "--self-contained-html", "tests/"]
+
+
+
 
 
