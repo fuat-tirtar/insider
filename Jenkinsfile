@@ -9,10 +9,10 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: 'main']], userRemoteConfigs: [[url: 'https://github.com/fuat-tirtar/insider.git']]])
+                git --branch main 'https://github.com/fuat-tirtar/insider.git'
                 script {
                     // Build Docker image
-                    docker.build(DOCKER_IMAGE)
+                    docker.build DOCKER_IMAGE
                 }
             }
         }
@@ -20,8 +20,8 @@ pipeline {
             steps {
                 script {
                     // Run Docker container with tests
-                    docker.image(DOCKER_IMAGE).withRun("-e NODE_COUNT=${NODE_COUNT}") { c ->
-                        sh "docker exec -i $(docker ps -q --filter ancestor=${DOCKER_IMAGE}) python -m unittest test_insider.py"
+                    docker.image(DOCKER_IMAGE).withRun("-e NODE_COUNT=${NODE_COUNT}") {
+                        sh 'docker exec -i $(docker ps -q --filter ancestor=${DOCKER_IMAGE}) python -m unittest test_insider.py'
                     }
                 }
             }
