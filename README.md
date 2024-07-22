@@ -1,5 +1,6 @@
 # insider-tests
   1.  Test Durumu Geliştirme hazırlanması
+ 
   a.Ana Sayfa Doğrulama
   b.Şirket ve Kariyer Sayfası Doğrulaması
   c.İlanı Doğrulaması
