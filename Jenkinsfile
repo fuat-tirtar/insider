@@ -9,7 +9,9 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                git --branch main 'https://github.com/fuat-tirtar/insider.git'
+                // Checkout the repository
+                checkout([$class: 'GitSCM', branches: [[name: 'main']], userRemoteConfigs: [[url: 'https://github.com/fuat-tirtar/insider.git']]])
+                
                 script {
                     // Build Docker image
                     docker.build DOCKER_IMAGE
