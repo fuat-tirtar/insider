@@ -9,7 +9,8 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                git --branch main 'https://github.com/fuat-tirtar/insider.git'
+                // Checkout the source code from GitHub
+                git branch: 'main', url: 'https://github.com/fuat-tirtar/insider.git'
                 script {
                     // Build Docker image
                     docker.build DOCKER_IMAGE
