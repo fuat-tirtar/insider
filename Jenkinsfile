@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                git 'https://github.com/fuat-tirtar/insider.git'
+                git --branch main 'https://github.com/fuat-tirtar/insider.git'
                 script {
                     // Build Docker image
                     docker.build DOCKER_IMAGE
