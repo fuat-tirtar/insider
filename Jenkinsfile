@@ -44,10 +44,10 @@ pipeline {
 
     post {
         always {
-            // Clean up Docker containers
+            // Docker containers will be cleaned up automatically by Docker's lifecycle management
+            // If you need to explicitly clean up containers or volumes, you can do so here
             script {
-                // Docker.cleanup() may be used if there are leftover containers
-                // Ensure cleanup is not required if containers are managed in the pipeline
+                // Optional: You may choose to add additional cleanup commands if necessary
             }
         }
     }
