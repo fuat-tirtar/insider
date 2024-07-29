@@ -21,13 +21,9 @@ pipeline {
             steps {
                 script {
                     // Run Docker container with tests
-                    def containerId = docker.image(DOCKER_IMAGE).inside("-e NODE_COUNT=${NODE_COUNT}") {
+                    docker.image(DOCKER_IMAGE).inside("-e NODE_COUNT=${NODE_COUNT}") {
+                        // Run tests inside the container
                         sh 'python -m unittest discover -s tests'
-                    }
-                    // Check if the container is running
-                    def isRunning = sh(script: "docker ps -q --filter ancestor=${DOCKER_IMAGE}", returnStatus: true) == 0
-                    if (!isRunning) {
-                        error "Docker container is not running."
                     }
                 }
             }
@@ -49,9 +45,8 @@ pipeline {
 
     post {
         always {
-            // Clean up Docker containers
             script {
-                // Get list of containers that are stopped but might still be lingering
+                // Clean up Docker containers
                 def containers = sh(script: "docker ps -a -q --filter 'status=exited' --filter 'ancestor=${DOCKER_IMAGE}'", returnStdout: true).trim()
                 if (containers) {
                     sh "docker rm -f ${containers}"
