@@ -13,7 +13,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/fuat-tirtar/insider.git'
                 script {
                     // Build Docker image
-                    docker.build DOCKER_IMAGE
+                    docker.build(DOCKER_IMAGE)
                 }
             }
         }
@@ -21,17 +21,14 @@ pipeline {
             steps {
                 script {
                     // Run Docker container with tests
-                    def containerId = docker.image(DOCKER_IMAGE).run('-d -e NODE_COUNT=${NODE_COUNT}')
-                    
-                    // Get logs for debugging
-                    sh "docker logs ${containerId}"
-                    
-                    // Run tests inside the container
-                    sh "docker exec ${containerId} python -m unittest test_insider.py"
-                    
-                    // Stop and remove the container
-                    sh "docker stop ${containerId}"
-                    sh "docker rm -f ${containerId}"
+                    def containerId = docker.image(DOCKER_IMAGE).inside("-e NODE_COUNT=${NODE_COUNT}") {
+                        sh 'python -m unittest discover -s tests'
+                    }
+                    // Check if the container is running
+                    def isRunning = sh(script: "docker ps -q --filter ancestor=${DOCKER_IMAGE}", returnStatus: true) == 0
+                    if (!isRunning) {
+                        error "Docker container is not running."
+                    }
                 }
             }
         }
@@ -52,9 +49,13 @@ pipeline {
 
     post {
         always {
-            // Optional: Clean up Docker containers if needed
+            // Clean up Docker containers
             script {
-                // Additional cleanup steps if necessary
+                // Get list of containers that are stopped but might still be lingering
+                def containers = sh(script: "docker ps -a -q --filter 'status=exited' --filter 'ancestor=${DOCKER_IMAGE}'", returnStdout: true).trim()
+                if (containers) {
+                    sh "docker rm -f ${containers}"
+                }
             }
         }
     }
