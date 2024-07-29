@@ -21,9 +21,17 @@ pipeline {
             steps {
                 script {
                     // Run Docker container with tests
-                    docker.image(DOCKER_IMAGE).inside("-e NODE_COUNT=${NODE_COUNT}") {
-                        sh 'python -m unittest test_insider.py'
-                    }
+                    def containerId = docker.image(DOCKER_IMAGE).run('-d -e NODE_COUNT=${NODE_COUNT}')
+                    
+                    // Get logs for debugging
+                    sh "docker logs ${containerId}"
+                    
+                    // Run tests inside the container
+                    sh "docker exec ${containerId} python -m unittest test_insider.py"
+                    
+                    // Stop and remove the container
+                    sh "docker stop ${containerId}"
+                    sh "docker rm -f ${containerId}"
                 }
             }
         }
@@ -44,10 +52,9 @@ pipeline {
 
     post {
         always {
-            // Docker containers will be cleaned up automatically by Docker's lifecycle management
-            // If you need to explicitly clean up containers or volumes, you can do so here
+            // Optional: Clean up Docker containers if needed
             script {
-                // Optional: You may choose to add additional cleanup commands if necessary
+                // Additional cleanup steps if necessary
             }
         }
     }
