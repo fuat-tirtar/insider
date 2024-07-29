@@ -21,8 +21,8 @@ pipeline {
             steps {
                 script {
                     // Run Docker container with tests
-                    docker.image(DOCKER_IMAGE).withRun("-e NODE_COUNT=${NODE_COUNT}") {
-                        sh 'docker exec -i $(docker ps -q --filter ancestor=${DOCKER_IMAGE}) python -m unittest test_insider.py'
+                    docker.image(DOCKER_IMAGE).inside("-e NODE_COUNT=${NODE_COUNT}") {
+                        sh 'python -m unittest test_insider.py'
                     }
                 }
             }
@@ -46,8 +46,8 @@ pipeline {
         always {
             // Clean up Docker containers
             script {
-                docker.image(DOCKER_IMAGE).stop()
-                docker.image(DOCKER_IMAGE).remove()
+                // Docker.cleanup() may be used if there are leftover containers
+                // Ensure cleanup is not required if containers are managed in the pipeline
             }
         }
     }
