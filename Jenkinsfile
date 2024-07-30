@@ -9,9 +9,10 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                // Checkout the source code from GitHub
-                git branch: 'main', url: 'https://github.com/fuat-tirtar/insider.git'
                 script {
+                    // Checkout the source code from GitHub
+                    git branch: 'main', url: 'https://github.com/fuat-tirtar/insider.git'
+
                     // Build Docker image
                     docker.build(DOCKER_IMAGE)
                 }
@@ -21,8 +22,7 @@ pipeline {
             steps {
                 script {
                     // Run Docker container with tests
-                    docker.image(DOCKER_IMAGE).inside { 
-                        withEnv(["NODE_COUNT=${NODE_COUNT}"])
+                    docker.image(DOCKER_IMAGE).inside("-e NODE_COUNT=${NODE_COUNT}") {
                         // Run tests inside the container
                         sh 'python -m unittest discover -s tests'
                     }
