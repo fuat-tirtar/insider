@@ -22,9 +22,14 @@ pipeline {
             steps {
                 script {
                     // Run Docker container with tests
-                    docker.image(DOCKER_IMAGE).inside("-e NODE_COUNT=${NODE_COUNT}") {
-                        // Run tests inside the container
-                        sh 'python -m unittest discover -s tests'
+                    def containerId = sh(script: "docker run -d -u $(id -u):$(id -g) -w /app -v ${env.WORKSPACE}:/app ${DOCKER_IMAGE} tail -f /dev/null", returnStdout: true).trim()
+                    try {
+                        // Execute test command inside the running container
+                        sh "docker exec ${containerId} python -m unittest discover -s tests"
+                    } finally {
+                        // Cleanup: Stop and remove the container
+                        sh "docker stop ${containerId}"
+                        sh "docker rm -f ${containerId}"
                     }
                 }
             }
@@ -50,9 +55,4 @@ pipeline {
                 // Clean up Docker containers
                 def containers = sh(script: "docker ps -a -q --filter 'status=exited' --filter 'ancestor=${DOCKER_IMAGE}'", returnStdout: true).trim()
                 if (containers) {
-                    sh "docker rm -f ${containers}"
-                }
-            }
-        }
-    }
-}
+                    sh "docker rm -f ${co
