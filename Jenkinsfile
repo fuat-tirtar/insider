@@ -21,7 +21,8 @@ pipeline {
             steps {
                 script {
                     // Run Docker container with tests
-                    docker.image(DOCKER_IMAGE).inside("-e NODE_COUNT=${NODE_COUNT}") {
+                    docker.image(DOCKER_IMAGE).inside { 
+                        withEnv(["NODE_COUNT=${NODE_COUNT}"])
                         // Run tests inside the container
                         sh 'python -m unittest discover -s tests'
                     }
